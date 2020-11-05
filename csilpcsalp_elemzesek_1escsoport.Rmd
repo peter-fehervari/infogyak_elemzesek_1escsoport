@@ -1,0 +1,57 @@
+---
+title: "Csilcsalp 1.es csoport"
+author: "Fehérvári Péter"
+date: "05/11/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, tidy = TRUE)
+library(tidyverse)
+library(lubridate)
+```
+
+# Adatbeolvasás
+
+Az adatokat az alábbi kóddal olvastam be. 
+
+```{r adatbeolvasas,echo=TRUE, tidy=TRUE}
+setwd("C:/Users/Biostat/Desktop/Infogyak") # munkakonyvtar beallitasa
+#dir()
+
+cs_adat <- read.table(file = "csilpcsalp_rbe.txt",
+                      header = TRUE,
+                      sep = "\t",
+                      dec = ".",
+                      na.strings = c("null","NA"))
+
+cs_adat$tomeg <- ifelse(cs_adat$TOMEG==0,NA,cs_adat$TOMEG)
+cs_adat$szarny <- ifelse(cs_adat$SZARNY==0,NA,cs_adat$SZARNY)
+cs_adat$harmadik <- ifelse(cs_adat$HARMADIK==0,NA,cs_adat$HARMADIK)
+cs_adat$farok <- ifelse(cs_adat$FAROK==0,NA,cs_adat$FAROK)
+
+```
+
+A dátumot a **lubridate** csomag segítségével átalakítottam *Date* formátummá majd ebből kiszámoltam a fogási események évnapját.
+
+```{r datekonvert}
+cs_adat$datum2 <- mdy(cs_adat$DATUM)
+cs_adat$evnap <- yday(cs_adat$datum2)
+```
+
+A füzikék esetében az átlagos testtömeg **`r round(mean(cs_adat$tomeg,na.rm=T),2)` gram** míg a szórás `r round(sd(cs_adat$tomeg,na.rm=T),2)` gram volt.
+
+```{r boxplotok, fig.width=4}
+boxplot(cs_adat$szarny~cs_adat$ZSIR,
+        main = "Szárnyhossz boxplotok a \n zsírkategóriák szerint",
+        ylab = "Szárnyhossz (mm)",
+        xlab = "Zsírkategóriák")
+
+boxplot(cs_adat$tomeg~cs_adat$IZOM,
+        main = "Tömeg boxplotok a \n izomkategóriák szerint",
+        ylab = "Tömeg (g)",
+        xlab = "Izomkategóriák")
+```
+
+
+
